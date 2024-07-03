@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 #include <string.h>
 #include "../../CMD/cmd.h"
 #include "../../PID/pid.h"
@@ -29,6 +30,9 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+
+extern car_move_t car_move;
+
 
 /* USER CODE END PTD */
 
@@ -71,6 +75,11 @@ uint8_t data_index = 0;
 volatile uint8_t data_received = 0;
 
 
+int16_t cnt_a = 0;
+int16_t cnt_b = 0;
+
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -103,7 +112,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
             receivedData[data_index++] = '\0'; // null terminate the string
             data_received = 1;
             data_index = 0;
+
         } else {
+
             data_index++;
         }
 
@@ -153,34 +164,41 @@ int main(void)
 
   HAL_UART_Receive_IT(&huart1, (uint8_t*)receivedData, 1);
 
-  HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
-
-  TIM8->CCR1 = 0;
-  TIM8->CCR2 = 0;
-
-  HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL); // ?¸ì½”ë” ?‹œ?ž‘
-  HAL_TIM_Encoder_Start(&htim5, TIM_CHANNEL_ALL); // ?¸ì½”ë” ?‹œ?ž‘
-
-
-
-  //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); // go
-  //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); // back
-
-  //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
-
 
   //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); // Motor dirver off
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); // Motor dirver on
 
 
+  HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
+  TIM8->CCR1 = 00;  // LEFT REAR VIEW
+  HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL); // LEFT ENCODER (+)
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); // LEFT go
+  //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); // LEFT back
+
+
+  HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
+  TIM8->CCR2 = 00;   // RIGHT READ VIEW
+  HAL_TIM_Encoder_Start(&htim5, TIM_CHANNEL_ALL); // RIGHT ENCODER (-)
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); // RIGHT GO
+//  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); // RIGHT BACK
+
+//
+//  while(1){
+//      cnt_a = (int16_t)TIM4->CNT;  //ENCODE LEFT
+//      cnt_b = ( )TIM5->CNT;  //ENCODER RIGHT
+//  }
+
+
   uint32_t pid_pre_tick = 0;
+  uint32_t speed_report_tick = 0;
+
   pid_para_init();
 
   //pid_set_target_speed(0, 0);
 
 
   /* USER CODE END 2 */
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -206,8 +224,19 @@ int main(void)
 
           pid_controller_a(10);
           pid_controller_b(10);
-
           pid_pre_tick = HAL_GetTick();
+
+      }
+
+
+
+      if( HAL_GetTick() - speed_report_tick > 50 ) //50 ms, frequency (1/T)=f 1000ms/50ms = 20
+      {
+          get_report_speed(50);
+
+          printf("{ \"cmd\":\"carmove\", \"svel\": %d,\"avel\":%d }\n", (int)(car_move.cur_speed_vel), (int)(car_move.cur_angle_vel)  );
+
+          speed_report_tick = HAL_GetTick();
       }
 
 

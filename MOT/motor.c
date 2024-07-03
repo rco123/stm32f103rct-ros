@@ -8,6 +8,7 @@
 #include "main.h"
 
 
+
 void mot_all_stop()
 {
     TIM8->CCR1 = 0;
@@ -41,6 +42,7 @@ void mota_dir_pwm(int dir, uint16_t pwm)
 
 }
 
+
 void motb_dir_pwm(int dir, uint16_t pwm)
 {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); // Motor Drive on
@@ -58,7 +60,6 @@ void motb_dir_pwm(int dir, uint16_t pwm)
     }
 
 }
-
 
 
 int mota_enc_diff(void)

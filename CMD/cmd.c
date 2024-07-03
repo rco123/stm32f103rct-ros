@@ -159,11 +159,9 @@ void process_json(const char *json_string)
        pid_set_target_speed(1, 0);
     }
 
-
     if(!strcmp(cmd_str,"set_vel" ))
     {
         // xdir_val, zang_val convert
-
         float mt0_val =  (float)xdir_val -  ( ((float)zang_val / 180 * M_PI) * MOT_WHEEL_DIST ) / 2;
         pid_set_target_speed(0, (int)mt0_val);
 
@@ -183,7 +181,6 @@ void process_json(const char *json_string)
         printf("{ \"cmd\":\"get_cnt\", \"mt0\": %d,\"mt1\":%d }\n", mt0_cnt, mt1_cnt);
 
     }
-
 
 
 }

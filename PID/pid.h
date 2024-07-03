@@ -26,12 +26,23 @@ typedef struct mot_para_
 } mot_para;
 
 
+typedef struct {
+
+    float cur_angle_vel;
+    float cur_speed_vel;
+
+} car_move_t;
+
+
 void pid_para_init();
 void pid_set_target_speed(unsigned int mot_no, int speed);
 
 // PID 제어 함수
 void pid_controller_a(uint16_t tdelta);
 void pid_controller_b(uint16_t tdelta);
+
+
+void get_report_speed(uint16_t delta_t);
 
 
 #endif /* PID_H_ */
