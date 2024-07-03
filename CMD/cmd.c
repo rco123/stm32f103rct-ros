@@ -15,6 +15,8 @@
 extern mot_para mota;
 extern mot_para motb;
 
+extern TIM_HandleTypeDef htim3;
+
 
 #define DEBUG 1
 #if DEBUG
@@ -31,6 +33,9 @@ extern mot_para motb;
 //  {"cmd":"stop" }
 //  {"cmd":"set_mtsp", "mt0": 40, "mt1": 40 }  //set motor speed
 //  {"cmd":"get_cnts"}
+
+
+extern void set_servo_angle(TIM_HandleTypeDef *htim, uint32_t channel, int angle);
 
 
 
@@ -56,6 +61,7 @@ void process_json(const char *json_string)
     int mt1_val = 0;
     int xdir_val = 0;
     int zang_val = 0;
+    int servo_ang = 0;
 
     // cJSON 객체를 순회하면서 각 키와 값을 처리합니다.
     cJSON *item = NULL;
@@ -94,6 +100,11 @@ void process_json(const char *json_string)
               mt1_val = (int)item->valuedouble;
         }
 
+        // =========================
+        if (!strcmp(item->string, "ang")) {
+            servo_ang = (int) item->valuedouble;
+        }
+
 
         // =========================
         if(!strcmp(item->string, "xdir"))
@@ -104,7 +115,6 @@ void process_json(const char *json_string)
         {
               zang_val = (int)item->valuedouble;
         }
-
 
 
     }
@@ -170,6 +180,19 @@ void process_json(const char *json_string)
 
     }
 
+    if (!strcmp(cmd_str, "set_vel")) {
+        // xdir_val, zang_val convert
+        float mt0_val = (float) xdir_val
+                - (((float) zang_val / 180 * M_PI) * MOT_WHEEL_DIST) / 2;
+        pid_set_target_speed(0, (int) mt0_val);
+
+        float mt1_val = (float) xdir_val
+                + (((float) zang_val / 180 * M_PI) * MOT_WHEEL_DIST) / 2;
+        pid_set_target_speed(1, (int) mt1_val);
+
+    }
+
+
     if(!strcmp(cmd_str,"get_cnt"))
     {
         int mt0_cnt = 0;
@@ -181,6 +204,21 @@ void process_json(const char *json_string)
         printf("{ \"cmd\":\"get_cnt\", \"mt0\": %d,\"mt1\":%d }\n", mt0_cnt, mt1_cnt);
 
     }
+
+
+    if(!strcmp(cmd_str,"servo_ang"))
+    {
+        int angle;
+
+        if(servo_ang > 40) servo_ang = 40;
+        if(servo_ang < -40) servo_ang = -40;
+
+        angle = servo_ang;
+
+        set_servo_angle(&htim3, TIM_CHANNEL_1, angle);
+
+    }
+
 
 
 }
