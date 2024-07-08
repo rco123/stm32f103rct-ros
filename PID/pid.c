@@ -57,24 +57,24 @@ void pid_set_target_speed(unsigned int mot_no, int speed)
 
 void get_report_speed(uint16_t tdelta)
 {
-    int32_t sum_cnt = 0;
+    car_move.sum_cnt_l = 0;
+    car_move.sum_cnt_r = 0;
 
-    sum_cnt = mota.sum_enc_cnt; mota.sum_enc_cnt = 0;
-    float mota_speed =  ( ((float)sum_cnt) / MOT_ENC_WHEEL_CNT ) * ( MOT_WHEEL_DIA * M_PI) / (float)tdelta * 1000; //tdelata_ms
+    car_move.sum_cnt_l = mota.sum_enc_cnt; mota.sum_enc_cnt = 0;
+    float mota_speed =  ( ((float)car_move.sum_cnt_l) / MOT_ENC_WHEEL_CNT ) * ( MOT_WHEEL_DIA * M_PI) / (float)tdelta * 1000; //tdelata_ms
 
-    sum_cnt = mota.sum_enc_cnt; mota.sum_enc_cnt = 0;
-    float motb_speed =  ( ((float)sum_cnt) / MOT_ENC_WHEEL_CNT ) * ( MOT_WHEEL_DIA * M_PI) / (float) tdelta * 1000; //tdelata_ms
+    car_move.sum_cnt_r = motb.sum_enc_cnt; motb.sum_enc_cnt = 0;
+    float motb_speed =  ( ((float)car_move.sum_cnt_r) / MOT_ENC_WHEEL_CNT ) * ( MOT_WHEEL_DIA * M_PI) / (float) tdelta * 1000; //tdelata_ms
 
     car_move.cur_speed_vel = (mota_speed + motb_speed) / 2.0f;
 
     // 각도 계산 (여기서는 각속도를 기반으로 계산)
     float speed_difference = (mota_speed - motb_speed) * -1;
-
-    float angular_velocity = speed_difference / (MOT_WHEEL_DIST / 2.0f) * (180 /M_PI ) * 1000;  // 각속도 = 속도 차이 / (바퀴 간의 거리 / 2) * 1000 배
-
+    float angular_velocity = speed_difference / (MOT_WHEEL_DIST) * (180.0f /M_PI ) * 1000;  // 각속도 = 속도 차이 / (바퀴 간의 거리 / 2) * 1000 배
     car_move.cur_angle_vel = angular_velocity;
 
     return;
+
 }
 
 

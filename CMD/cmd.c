@@ -18,7 +18,7 @@ extern mot_para motb;
 extern TIM_HandleTypeDef htim3;
 
 
-#define DEBUG 1
+#define DEBUG 0
 #if DEBUG
 #define dprintf printf
 #else
@@ -68,7 +68,7 @@ void process_json(const char *json_string)
 
     cJSON_ArrayForEach(item, json) {
         // 키와 값을 출력합니다.
-        dprintf("Key: %s\n", item->string);
+        //dprintf("Key: %s\n", item->string);
 
         if(!strcmp(item->string, "cmd"))  // main command
         {
@@ -201,12 +201,12 @@ void process_json(const char *json_string)
         mt0_cnt = mota.sum_enc_cnt; mota.sum_enc_cnt = 0;
         mt1_cnt = motb.sum_enc_cnt; motb.sum_enc_cnt = 0;
 
-        printf("{ \"cmd\":\"get_cnt\", \"mt0\": %d,\"mt1\":%d }\n", mt0_cnt, mt1_cnt);
+        //printf("{ \"cmd\":\"get_cnt\", \"mt0\": %d,\"mt1\":%d }\n", mt0_cnt, mt1_cnt);
 
     }
 
 
-    if(!strcmp(cmd_str,"servo_ang"))
+    if(!strcmp(cmd_str,"svoAng"))
     {
         int angle;
 

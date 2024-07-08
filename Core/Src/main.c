@@ -113,7 +113,7 @@ void set_servo_angle(TIM_HandleTypeDef *htim, uint32_t channel, int angle)
 {
     angle = angle + 90;
 
-    // ê°ë„ì— ë”°ë¥¸ PWM ë“€í‹° ì‚¬ì´í´ ê³„ì‚° (0ë„ = 1ms, 180ë„ = 2ms)
+    // ê°ë„?— ?”°ë¥? PWM ???‹° ?‚¬?´?´ ê³„ì‚° (0?„ = 1ms, 180?„ = 2ms)
     uint32_t pulse_length = (angle * (2000 - 1000) / 180 + 1000);
     __HAL_TIM_SET_COMPARE(htim, channel, pulse_length);
 }
@@ -205,7 +205,7 @@ int main(void)
 
 
   uint32_t pid_pre_tick = 0;
-  uint32_t speed_report_tick = 0;
+  uint32_t speed_report_tick = HAL_GetTick();
 
   pid_para_init();
 
@@ -248,16 +248,20 @@ int main(void)
 
       }
 
-      if( HAL_GetTick() - speed_report_tick > 50 ) //50 ms, frequency (1/T)=f 1000ms/50ms = 20
+      uint32_t delta = HAL_GetTick() - speed_report_tick;
+
+      if( delta > 50 ) //50 ms, frequency (1/T)=f 1000ms/50ms = 20
       {
           get_report_speed(50);
 
-          printf("{ \"cmd\":\"carmove\", \"svel\": %d,\"avel\":%d }\n", (int)(car_move.cur_speed_vel), (int)(car_move.cur_angle_vel) );
-          int angle = (int)(car_move.cur_angle_vel / 1000.0f);
+          //printf("{ \"cmd\":\"carmove\", \"svel\": %d,\"avel\":%d }\n", (int)(car_move.cur_speed_vel), (int)(car_move.cur_angle_vel) );
+          printf("{ \"cmd\":\"carmove\",\"mtl\": %d,\"mtr\":%d,\"dt\":%d}\n", (int)(car_move.sum_cnt_l), (int)(car_move.sum_cnt_r), (int)delta );
 
-          set_servo_angle(&htim3, TIM_CHANNEL_1, angle);
-
+//          int angle = (int)(car_move.cur_angle_vel / 1000.0f);
+//          set_servo_angle(&htim3, TIM_CHANNEL_1, angle);
+//
           speed_report_tick = HAL_GetTick();
+
       }
 
 
@@ -473,7 +477,7 @@ static void MX_TIM4_Init(void)
   htim4.Init.Period = 65535;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
   sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
@@ -522,7 +526,7 @@ static void MX_TIM5_Init(void)
   htim5.Init.Period = 65535;
   htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
   sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC1Prescaler = TIM_ICPSC_DIV1;

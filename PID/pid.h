@@ -30,6 +30,8 @@ typedef struct {
 
     float cur_angle_vel;
     float cur_speed_vel;
+    int32_t sum_cnt_l;
+    int32_t sum_cnt_r;
 
 } car_move_t;
 
